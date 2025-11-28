@@ -6,10 +6,11 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import List, Mapping, MutableMapping
+# 修改点：添加了 Iterable
+from typing import List, Mapping, MutableMapping, Iterable
 
 from urllib import parse, request
-import markdown  # 使用 markdown 库的 markdown 函数
+import markdown  # 需要 pip install markdown
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -78,13 +79,20 @@ def fetch_issues(
     while url:
         query = f"?{parse.urlencode(params)}" if params else ""
         req = request.Request(url + query, headers=headers)
-        with request.urlopen(req) as resp:
-            payload = resp.read()
-            link_header = resp.headers.get("Link", "")
+        
+        # 增加简单的错误处理，防止 API 请求失败导致崩溃
+        try:
+            with request.urlopen(req) as resp:
+                payload = resp.read()
+                link_header = resp.headers.get("Link", "")
+        except Exception as e:
+            print(f"Error fetching issues: {e}")
+            break
 
         page_items = [item for item in json.loads(payload) if "pull_request" not in item]
         for issue in page_items:
-            if issue["user"]["login"] != allowed_author:
+            # 安全检查：防止 user 字段为空的情况（极少见但可能）
+            if issue.get("user") and issue["user"].get("login") != allowed_author:
                 continue
             issues.append(issue)
 
@@ -103,13 +111,15 @@ def fetch_issues(
     return issues
 
 
-
 def render_post(issue: Mapping[str, str]) -> str:
     """渲染单篇文章为 HTML"""
     title = issue["title"]
-    created_at = dt.datetime.fromisoformat(issue["created_at"].replace("Z", "+00:00"))
-    body_html = markdown.markdown(issue.get("body", ""), extensions=["fenced_code", "tables", "toc"])
-    slug = slugify(title)
+    # 处理日期格式，兼容 Python < 3.11
+    created_at_str = issue["created_at"].replace("Z", "+00:00")
+    created_at = dt.datetime.fromisoformat(created_at_str)
+    
+    body_html = markdown.markdown(issue.get("body", "") or "", extensions=["fenced_code", "tables", "toc"])
+    
     return f"""<!DOCTYPE html>
 <html lang=\"zh-CN\">
 <head>
@@ -149,7 +159,7 @@ def write_post_files(issues: Iterable[Mapping[str, str]]) -> List[Mapping[str, s
             {
                 "title": title,
                 "slug": slug,
-                "summary": summarize_body(issue.get("body", "")),
+                "summary": summarize_body(issue.get("body", "") or ""),
                 "created_at": issue["created_at"],
             }
         )
@@ -238,16 +248,21 @@ def generate() -> None:
     token = os.environ.get("GITHUB_TOKEN")
     repository = os.environ.get("GITHUB_REPOSITORY")
     if not token or not repository:
+        # 为了本地测试方便，如果缺少环境变量可以打印提示而不是直接抛出异常
+        # 但在生产环境中抛出异常是正确的
         raise EnvironmentError("GITHUB_TOKEN and GITHUB_REPOSITORY are required")
 
     label = os.environ.get("BLOG_LABEL") or None
     repo_owner = repository.split("/", maxsplit=1)[0]
     allowed_author = os.environ.get("BLOG_OWNER", repo_owner)
 
+    print(f"Fetching issues from {repository} (Author: {allowed_author}, Label: {label})...")
     issues = fetch_issues(token, repository, allowed_author=allowed_author, label=label)
+    print(f"Found {len(issues)} issues. Generating pages...")
     post_metadata = write_post_files(issues)
     author = load_author_config()
     write_site_files(post_metadata, author)
+    print("Done.")
 
 
 if __name__ == "__main__":
