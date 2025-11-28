@@ -26,6 +26,7 @@ from urllib import parse, request
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from markdown import markdown as render_markdown  # noqa: E402
 from markdown import markdown  # noqa: E402
 from pathlib import Path
 from typing import Iterable, List, Mapping, MutableMapping
@@ -75,6 +76,46 @@ def summarize_body(body: str, length: int = 140) -> str:
 
 
 def fetch_issues(
+    token: str, repository: str, allowed_author: str, label: str | None = None
+) -> List[MutableMapping[str, str]]:
+    url = f"https://api.github.com/repos/{repository}/issues"
+    headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github+json"}
+    params = {
+        "state": "open",
+        "per_page": 100,
+        "sort": "created",
+        "direction": "desc",
+    }
+    if label:
+        params["labels"] = label
+    issues: List[MutableMapping[str, str]] = []
+
+    while url:
+        query = f"?{parse.urlencode(params)}" if params else ""
+        req = request.Request(url + query, headers=headers)
+        with request.urlopen(req) as resp:
+            payload = resp.read()
+            link_header = resp.headers.get("Link", "")
+
+        page_items = [item for item in json.loads(payload) if "pull_request" not in item]
+        for issue in page_items:
+            if issue["user"]["login"] != allowed_author:
+                continue
+            issues.append(issue)
+
+        url = None
+        for link in link_header.split(","):
+            segments = link.split(";")
+            if len(segments) < 2:
+                continue
+            if 'rel="next"' in segments[1]:
+                candidate = segments[0].strip()
+                if candidate.startswith("<") and candidate.endswith(">"):
+                    url = candidate[1:-1]
+                break
+        params = None
+
+    return issues
   token: str, repository: str, label: str | None = None, allowed_author: str | None = None
 ) -> List[MutableMapping[str, str]]:
   """Fetch issues from GitHub API.
@@ -127,6 +168,7 @@ def fetch_issues(
 def render_post(issue: Mapping[str, str]) -> str:
     title = issue["title"]
     created_at = dt.datetime.fromisoformat(issue["created_at"].replace("Z", "+00:00"))
+    body_html = render_markdown(issue.get("body", ""))
     body_html = markdown(issue.get("body", ""))
     body_html = markdown.markdown(
         issue.get("body", ""), extensions=["fenced_code", "tables", "toc"]
