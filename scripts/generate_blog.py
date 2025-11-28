@@ -144,6 +144,16 @@ def render_post(issue: Mapping[str, str]) -> str:
 </html>"""
 
 
+def remove_stale_posts(valid_slugs: set[str]) -> None:
+    """删除已不存在的 Issue 对应的文章文件"""
+    if not POST_DIR.exists():
+        return
+
+    for post_file in POST_DIR.glob("*.html"):
+        if post_file.stem not in valid_slugs:
+            post_file.unlink()
+
+
 def write_post_files(issues: Iterable[Mapping[str, str]]) -> List[Mapping[str, str]]:
     """将每个 Issue 渲染成 HTML 文件并保存"""
     POST_DIR.mkdir(parents=True, exist_ok=True)
@@ -265,6 +275,7 @@ def generate() -> None:
     print(f"Found {len(issues)} issues.")
     
     post_metadata = write_post_files(issues)
+    remove_stale_posts({post["slug"] for post in post_metadata})
     author = load_author_config()
     write_site_files(post_metadata, author)
     print("Blog generated successfully.")

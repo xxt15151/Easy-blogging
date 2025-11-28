@@ -2,12 +2,13 @@ name: Blog post generator
 
 on:
   issues:
-    types: [opened, edited, reopened, labeled, unlabeled]
+    types: [opened, edited, reopened, labeled, unlabeled, deleted]
   workflow_dispatch:
 
 permissions:
   contents: write
   issues: write
+  actions: write
 
 jobs:
   guard_issue:
@@ -70,3 +71,20 @@ jobs:
           else
             echo "No changes to commit"
           fi
+
+  trigger_pages_deploy:
+    needs: generate_site
+    if: needs.generate_site.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Pages deployment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'static.yml',
+              ref: context.ref,
+            });
