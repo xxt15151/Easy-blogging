@@ -1,0 +1,70 @@
+name: Blog post generator
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  guard_issue:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close issues not opened by owner
+        uses: actions/github-script@v7
+        env:
+          BLOG_OWNER: ${{ vars.BLOG_OWNER }}
+        with:
+          script: |
+            const allowed = process.env.BLOG_OWNER || context.repo.owner;
+            const creator = context.payload.issue.user.login;
+            if (creator === allowed) {
+              core.info(`Issue created by ${creator}, allowed.`);
+              return;
+            }
+            const number = context.issue.number;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              body: `只有 ${allowed} 可以创建文章 Issue，当前作者为 @${creator}，该 Issue 将被关闭。`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: number,
+              state: 'closed'
+            });
+            core.setFailed('Issue author is not allowed to publish posts.');
+
+  generate_site:
+    needs: [guard_issue]
+    if: needs.guard_issue.result != 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate static pages from Issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_LABEL: ${{ vars.BLOG_LABEL }}
+          BLOG_OWNER: ${{ vars.BLOG_OWNER }}
+        run: python scripts/generate_blog.py
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git status --porcelain | grep .; then
+            git add .
+            git commit -m "chore: update blog pages"
+            git push
+          else
+            echo "No changes to commit"
+          fi
