@@ -54,6 +54,7 @@ Easy-blogging turns GitHub Issues into polished static pages. Any Issue with the
 ## Customization
 - **Styling**: Edit `style.css` to tweak colors, typography, and card visuals.
 - **Home content**: Adjust avatar, name, bio, and CTA text in `config/author.json`.
+- **Author config details**: `author.json` ships with `name`, `tagline`, `bio`, `avatar`, and `cta_text`. The generator reloads these values and rewrites `index.html` every time a post build runs, so changing the config alone won't alter the live site until the next post publish (or a manual run of `scripts/generate_blog.py`).
 - **Assets**: Place images and media under `/assets` and reference them directly in posts.
 - **Local preview**: `pip install -r requirements.txt`, then run `python scripts/generate_blog.py` with `GITHUB_TOKEN`, `BLOG_LABEL`, and `BLOG_OWNER` set to fetch Issues.
 

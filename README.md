@@ -54,6 +54,7 @@
 ## 自定义与扩展
 - **样式**：调整 `style.css` 即可修改配色、字体与卡片效果。
 - **主页信息**：`config/author.json` 控制头像、昵称、签名、CTA 按钮文案。
+- **作者配置说明**：`author.json` 中提供 `name`（昵称）、`tagline`（标语）、`bio`（简介）、`avatar`（头像链接）、`cta_text`（按钮文案）字段。生成脚本在每次发布文章时都会重新读取这些值并写入 `index.html`，因此仅修改配置文件不会立即生效，但在下一次触发文章发布或手动运行生成脚本时主页就会同步更新。
 - **静态资源**：在 `/assets` 放置图片等资源，文章可直接引用。
 - **本地试用**：`pip install -r requirements.txt` 后运行 `python scripts/generate_blog.py`，需要设置 `GITHUB_TOKEN`、`BLOG_LABEL`、`BLOG_OWNER` 环境变量以从 Issue 拉取数据。
 
