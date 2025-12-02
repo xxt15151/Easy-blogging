@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   sync-style:
@@ -29,16 +30,33 @@ jobs:
         run: python scripts/apply_style.py
 
       - name: Commit and push style update
+        id: commit_style
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet; then
-            git add style.css index.html list.html _posts || true
-            git add -A
-            git commit -m "chore: apply page style"
-            git push
-          else
+          if git diff --quiet; then
             echo "No style changes detected"
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          git add style.css index.html list.html _posts || true
+          git add -A
+          git commit -m "chore: apply page style"
+          git push
+          echo "changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger static deploy
+        if: steps.commit_style.outputs.changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'static.yml',
+              ref: context.ref,
+            });
