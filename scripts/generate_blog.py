@@ -6,11 +6,11 @@ import os
 import re
 import sys
 from pathlib import Path
-# 修改点：添加了 Iterable
-from typing import List, Mapping, MutableMapping, Iterable
+from typing import Iterable, List, Mapping, MutableMapping
 
 from urllib import parse, request
 import markdown  # 需要 pip install markdown
+import hashlib
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -29,6 +29,7 @@ def load_author_config() -> Mapping[str, str]:
         "bio": "通过 Issue 写博客，GitHub Actions 自动生成静态站点。",
         "avatar": "https://avatars.githubusercontent.com/u/9919?v=4",
         "cta_text": "查看全部文章",
+        "page_style": "default",
     }
     if not CONFIG_PATH.exists():
         return default
@@ -37,6 +38,17 @@ def load_author_config() -> Mapping[str, str]:
         data = json.load(handle)
 
     return {**default, **{k: v for k, v in data.items() if isinstance(v, str)}}
+
+
+def style_version() -> str:
+    """Return a stable hash of style.css for cache busting."""
+
+    css_path = ROOT / "style.css"
+    if not css_path.exists():
+        return "dev"
+
+    content = css_path.read_text(encoding="utf-8")
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
 
 
 def slugify(title: str) -> str:
@@ -111,7 +123,7 @@ def fetch_issues(
     return issues
 
 
-def render_post(issue: Mapping[str, str]) -> str:
+def render_post(issue: Mapping[str, str], css_version: str) -> str:
     """渲染单篇文章为 HTML"""
     title = issue["title"]
     # 处理日期格式，兼容 Python < 3.11
@@ -126,7 +138,7 @@ def render_post(issue: Mapping[str, str]) -> str:
   <meta charset=\"UTF-8\" />
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
   <title>{title} | 轻松博客</title>
-  <link rel=\"stylesheet\" href=\"../style.css\" />
+  <link rel=\"stylesheet\" href=\"../style.css?v={css_version}\" />
 </head>
 <body>
   <header class=\"top-nav\">
@@ -154,7 +166,7 @@ def remove_stale_posts(valid_slugs: set[str]) -> None:
             post_file.unlink()
 
 
-def write_post_files(issues: Iterable[Mapping[str, str]]) -> List[Mapping[str, str]]:
+def write_post_files(issues: Iterable[Mapping[str, str]], css_version: str) -> List[Mapping[str, str]]:
     """将每个 Issue 渲染成 HTML 文件并保存"""
     POST_DIR.mkdir(parents=True, exist_ok=True)
     metadata: List[Mapping[str, str]] = []
@@ -162,7 +174,7 @@ def write_post_files(issues: Iterable[Mapping[str, str]]) -> List[Mapping[str, s
     for issue in issues:
         title = issue["title"]
         slug = slugify(title)
-        html = render_post(issue)
+        html = render_post(issue, css_version)
         path = POST_DIR / f"{slug}.html"
         path.write_text(html, encoding="utf-8")
         metadata.append(
@@ -177,7 +189,7 @@ def write_post_files(issues: Iterable[Mapping[str, str]]) -> List[Mapping[str, s
     return metadata
 
 
-def render_list(posts: List[Mapping[str, str]]) -> str:
+def render_list(posts: List[Mapping[str, str]], css_version: str) -> str:
     """渲染文章列表页面"""
     sorted_posts = sorted(posts, key=lambda post: post["created_at"], reverse=True)
     cards = []
@@ -198,7 +210,7 @@ def render_list(posts: List[Mapping[str, str]]) -> str:
   <meta charset=\"UTF-8\" />
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
   <title>文章列表 | 轻松博客</title>
-  <link rel=\"stylesheet\" href=\"style.css\" />
+  <link rel=\"stylesheet\" href=\"style.css?v={css_version}\" />
 </head>
 <body>
   <header class=\"top-nav\">
@@ -217,7 +229,7 @@ def render_list(posts: List[Mapping[str, str]]) -> str:
 </html>"""
 
 
-def render_index(author: Mapping[str, str]) -> str:
+def render_index(author: Mapping[str, str], css_version: str) -> str:
     """渲染首页"""
     return f"""<!DOCTYPE html>
 <html lang=\"zh-CN\">
@@ -225,7 +237,7 @@ def render_index(author: Mapping[str, str]) -> str:
   <meta charset=\"UTF-8\" />
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
   <title>{author['name']} | 轻松博客</title>
-  <link rel=\"stylesheet\" href=\"style.css\" />
+  <link rel=\"stylesheet\" href=\"style.css?v={css_version}\" />
 </head>
 <body>
   <div class=\"hero\">
@@ -247,10 +259,10 @@ def render_index(author: Mapping[str, str]) -> str:
 </html>"""
 
 
-def write_site_files(posts: List[Mapping[str, str]], author: Mapping[str, str]) -> None:
+def write_site_files(posts: List[Mapping[str, str]], author: Mapping[str, str], css_version: str) -> None:
     """生成并保存所有静态网页文件"""
-    LIST_FILE.write_text(render_list(posts), encoding="utf-8")
-    INDEX_FILE.write_text(render_index(author), encoding="utf-8")
+    LIST_FILE.write_text(render_list(posts, css_version), encoding="utf-8")
+    INDEX_FILE.write_text(render_index(author, css_version), encoding="utf-8")
 
 
 def generate() -> None:
@@ -274,10 +286,11 @@ def generate() -> None:
     issues = fetch_issues(token, repository, allowed_author=allowed_author, label=label)
     print(f"Found {len(issues)} issues.")
     
-    post_metadata = write_post_files(issues)
+    css_version = style_version()
+    post_metadata = write_post_files(issues, css_version)
     remove_stale_posts({post["slug"] for post in post_metadata})
     author = load_author_config()
-    write_site_files(post_metadata, author)
+    write_site_files(post_metadata, author, css_version)
     print("Blog generated successfully.")
 
 

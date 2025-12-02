@@ -19,14 +19,17 @@
 /blog-repo
 ├── /_posts                # 生成的文章 HTML（由工作流写入）
 ├── /assets                # 静态资源占位目录
-├── /config/author.json    # 作者头像、昵称、签名、按钮文案
+├── /config/author.json    # 作者头像、昵称、签名、按钮文案、页面风格
 ├── /scripts/generate_blog.py
+├── /scripts/apply_style.py # 根据配置复制主题样式为 style.css
 ├── /markdown.py           # 轻量 Markdown 转换器（无外部依赖）
 ├── /index.html            # 主页（作者信息 + 推荐 CTA）
 ├── /list.html             # 文章列表页
-├── /style.css             # 统一样式（Vercel 风格）
+├── /style.css             # 统一样式（应用配置后生成）
+├── /styles                # 预置的多套样式（默认/卡通/复古/立体主义）
 └── .github/workflows/
     ├── blog-post-generator.yml  # Issue 自动生成页面
+    ├── apply-style.yml          # 配置变更时同步主题到 style.css
     └── static.yml               # 推送后触发 Pages 部署
 ```
 
@@ -52,9 +55,9 @@
   - 作用：上传整个仓库为 Pages Artifact 并部署到 GitHub Pages。
 
 ## 自定义与扩展
-- **样式**：调整 `style.css` 即可修改配色、字体与卡片效果。
+- **样式**：在 `config/author.json` 的 `page_style` 中选择 `default`、`cartoon`、`retro`、`cubism`。推送配置变更会自动触发工作流，将对应文件从 `/styles` 复制为根目录下的 `style.css`，并为引用添加哈希查询参数，以避开 GitHub Pages 的缓存延迟。
 - **主页信息**：`config/author.json` 控制头像、昵称、签名、CTA 按钮文案。
-- **作者配置说明**：`author.json` 中提供 `name`（昵称）、`tagline`（标语）、`bio`（简介）、`avatar`（头像链接）、`cta_text`（按钮文案）字段。生成脚本在每次发布文章时都会重新读取这些值并写入 `index.html`，因此仅修改配置文件不会立即生效，但在下一次触发文章发布或手动运行生成脚本时主页就会同步更新。
+- **作者配置说明**：`author.json` 中提供 `name`（昵称）、`tagline`（标语）、`bio`（简介）、`avatar`（头像链接）、`cta_text`（按钮文案）、`page_style`（页面风格）字段。生成脚本在每次发布文章时都会重新读取这些值并写入 `index.html`，因此仅修改作者信息不会立即生效；但修改 `page_style` 会立刻触发样式同步工作流，将所选主题写入 `style.css`。
 - **静态资源**：在 `/assets` 放置图片等资源，文章可直接引用。
 - **本地试用**：`pip install -r requirements.txt` 后运行 `python scripts/generate_blog.py`，需要设置 `GITHUB_TOKEN`、`BLOG_LABEL`、`BLOG_OWNER` 环境变量以从 Issue 拉取数据。
 
