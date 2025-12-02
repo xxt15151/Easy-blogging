@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -83,11 +82,6 @@ def apply_style() -> None:
         print(f"Updated stylesheet references in: {updated_paths}")
     else:
         print("No HTML references required updating.")
-def apply_style() -> None:
-    style_name = load_style_name()
-    source = resolve_style_file(style_name)
-    TARGET_STYLE.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-    print(f"Applied style: {source.name} -> {TARGET_STYLE.name}")
 
 
 if __name__ == "__main__":

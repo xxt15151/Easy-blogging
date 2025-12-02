@@ -29,14 +29,14 @@ jobs:
         run: python scripts/apply_style.py
 
       - name: Commit and push style update
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git status --porcelain)" ]; then
+          if ! git diff --quiet; then
             git add style.css index.html list.html _posts || true
             git add -A
-          if git status --porcelain | grep style.css; then
-            git add style.css
             git commit -m "chore: apply page style"
             git push
           else

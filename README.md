@@ -56,7 +56,6 @@
 
 ## 自定义与扩展
 - **样式**：在 `config/author.json` 的 `page_style` 中选择 `default`、`cartoon`、`retro`、`cubism`。推送配置变更会自动触发工作流，将对应文件从 `/styles` 复制为根目录下的 `style.css`，并为引用添加哈希查询参数，以避开 GitHub Pages 的缓存延迟。
-- **样式**：在 `config/author.json` 的 `page_style` 中选择 `default`、`cartoon`、`retro`、`cubism`。推送配置变更会自动触发工作流，将对应文件从 `/styles` 复制为根目录下的 `style.css`。
 - **主页信息**：`config/author.json` 控制头像、昵称、签名、CTA 按钮文案。
 - **作者配置说明**：`author.json` 中提供 `name`（昵称）、`tagline`（标语）、`bio`（简介）、`avatar`（头像链接）、`cta_text`（按钮文案）、`page_style`（页面风格）字段。生成脚本在每次发布文章时都会重新读取这些值并写入 `index.html`，因此仅修改作者信息不会立即生效；但修改 `page_style` 会立刻触发样式同步工作流，将所选主题写入 `style.css`。
 - **静态资源**：在 `/assets` 放置图片等资源，文章可直接引用。

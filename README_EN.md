@@ -56,7 +56,6 @@ Easy-blogging turns GitHub Issues into polished static pages. Any Issue with the
 
 ## Customization
 - **Styling**: Set `page_style` in `config/author.json` to `default`, `cartoon`, `retro`, or `cubism`. Pushing the config change triggers a workflow that copies the matching file from `/styles` into the root-level `style.css` and appends a hash query param to stylesheet links to avoid GitHub Pages cache lag.
-- **Styling**: Set `page_style` in `config/author.json` to `default`, `cartoon`, `retro`, or `cubism`. Pushing the config change triggers a workflow that copies the matching file from `/styles` into the root-level `style.css`.
 - **Home content**: Adjust avatar, name, bio, and CTA text in `config/author.json`.
 - **Author config details**: `author.json` ships with `name`, `tagline`, `bio`, `avatar`, `cta_text`, and `page_style`. The generator reloads these values and rewrites `index.html` every time a post build runs, so changing the textual info alone won't alter the live site until the next post publish (or a manual run of `scripts/generate_blog.py`), while changing `page_style` triggers the style-sync workflow immediately.
 - **Assets**: Place images and media under `/assets` and reference them directly in posts.
