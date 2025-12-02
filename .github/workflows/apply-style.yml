@@ -1,0 +1,41 @@
+name: Apply page style
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "config/author.json"
+      - "styles/**"
+      - "scripts/apply_style.py"
+      - ".github/workflows/apply-style.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-style:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Apply configured style
+        run: python scripts/apply_style.py
+
+      - name: Commit and push style update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git status --porcelain | grep style.css; then
+            git add style.css
+            git commit -m "chore: apply page style"
+            git push
+          else
+            echo "No style changes detected"
+          fi
