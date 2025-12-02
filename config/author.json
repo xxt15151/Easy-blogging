@@ -4,5 +4,5 @@
   "bio": "写下想法、推送 Issue，GitHub Actions 会帮你生成统一风格的静态页面，无需云服务器。",
   "avatar": "https://avatars.githubusercontent.com/u/9919?v=4",
   "cta_text": "开始阅读",
-  "page_style": "cubism"
+  "page_style": "default"
 }
