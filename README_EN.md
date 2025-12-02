@@ -19,14 +19,17 @@ Easy-blogging turns GitHub Issues into polished static pages. Any Issue with the
 /blog-repo
 ├── /_posts                # Generated post HTML files (written by the workflow)
 ├── /assets                # Placeholder for static assets
-├── /config/author.json    # Avatar, name, bio, CTA text
+├── /config/author.json    # Avatar, name, bio, CTA text, page style
 ├── /scripts/generate_blog.py
+├── /scripts/apply_style.py # Copies themed CSS into style.css based on config
 ├── /markdown.py           # Lightweight Markdown converter (no external deps)
 ├── /index.html            # Home page (author info + CTA)
 ├── /list.html             # Post list page
-├── /style.css             # Shared styles (Vercel-inspired)
+├── /style.css             # Shared styles (generated from selected theme)
+├── /styles                # Prebuilt themes (default/cartoon/retro/cubism)
 └── .github/workflows/
     ├── blog-post-generator.yml  # Issue-to-page pipeline
+    ├── apply-style.yml          # Syncs theme choice into style.css when config changes
     └── static.yml               # Pages deployment on push
 ```
 
@@ -52,9 +55,9 @@ Easy-blogging turns GitHub Issues into polished static pages. Any Issue with the
   - **Purpose**: Uploads the repository as a Pages artifact and deploys it to GitHub Pages.
 
 ## Customization
-- **Styling**: Edit `style.css` to tweak colors, typography, and card visuals.
+- **Styling**: Set `page_style` in `config/author.json` to `default`, `cartoon`, `retro`, or `cubism`. Pushing the config change triggers a workflow that copies the matching file from `/styles` into the root-level `style.css` and appends a hash query param to stylesheet links to avoid GitHub Pages cache lag.
 - **Home content**: Adjust avatar, name, bio, and CTA text in `config/author.json`.
-- **Author config details**: `author.json` ships with `name`, `tagline`, `bio`, `avatar`, and `cta_text`. The generator reloads these values and rewrites `index.html` every time a post build runs, so changing the config alone won't alter the live site until the next post publish (or a manual run of `scripts/generate_blog.py`).
+- **Author config details**: `author.json` ships with `name`, `tagline`, `bio`, `avatar`, `cta_text`, and `page_style`. The generator reloads these values and rewrites `index.html` every time a post build runs, so changing the textual info alone won't alter the live site until the next post publish (or a manual run of `scripts/generate_blog.py`), while changing `page_style` triggers the style-sync workflow immediately.
 - **Assets**: Place images and media under `/assets` and reference them directly in posts.
 - **Local preview**: `pip install -r requirements.txt`, then run `python scripts/generate_blog.py` with `GITHUB_TOKEN`, `BLOG_LABEL`, and `BLOG_OWNER` set to fetch Issues.
 
