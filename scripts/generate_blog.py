@@ -29,6 +29,7 @@ def load_author_config() -> Mapping[str, str]:
         "bio": "通过 Issue 写博客，GitHub Actions 自动生成静态站点。",
         "avatar": "https://avatars.githubusercontent.com/u/9919?v=4",
         "cta_text": "查看全部文章",
+        "page_style": "default",
     }
     if not CONFIG_PATH.exists():
         return default
