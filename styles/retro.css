@@ -184,6 +184,38 @@ a {
   border: 1px solid var(--border);
 }
 
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.article-body th,
+.article-body td {
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+
+.article-body thead th {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.article-body th:nth-child(odd),
+.article-body td:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.article-body th:nth-child(even),
+.article-body td:nth-child(even) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .article-body pre {
   background: rgba(0, 0, 0, 0.6);
   padding: 14px;
