@@ -13,6 +13,24 @@ from typing import List, Optional
 
 LINK_PATTERN = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
+MATH_SYMBOLS = {
+    r"\\wedge": "∧",
+    r"\\vee": "∨",
+    r"\\land": "∧",
+    r"\\lor": "∨",
+    r"\\neg": "¬",
+    r"\\to": "→",
+    r"\\rightarrow": "→",
+    r"\\leftarrow": "←",
+    r"\\leftrightarrow": "↔",
+}
+
+
+def _escape_with_math(text: str) -> str:
+    for pattern, symbol in MATH_SYMBOLS.items():
+        text = re.sub(pattern, symbol, text)
+    return html.escape(text)
+
 
 def _render_inline(text: str) -> str:
     segments: List[str] = []
@@ -20,12 +38,15 @@ def _render_inline(text: str) -> str:
     for match in LINK_PATTERN.finditer(text):
         start, end = match.span()
         if start > last:
-            segments.append(html.escape(text[last:start]))
+            segments.append(_escape_with_math(text[last:start]))
         label, url = match.groups()
-        segments.append(f"<a href=\"{html.escape(url)}\" target=\"_blank\">{html.escape(label)}</a>")
+        safe_label = _escape_with_math(label)
+        segments.append(
+            f"<a href=\"{html.escape(url)}\" target=\"_blank\">{safe_label}</a>"
+        )
         last = end
     if last < len(text):
-        segments.append(html.escape(text[last:]))
+        segments.append(_escape_with_math(text[last:]))
     return "".join(segments)
 
 
