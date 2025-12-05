@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import html
 import re
-from typing import List
+from typing import List, Optional
 
 
 LINK_PATTERN = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
@@ -27,6 +27,49 @@ def _render_inline(text: str) -> str:
     if last < len(text):
         segments.append(html.escape(text[last:]))
     return "".join(segments)
+
+
+def _split_cells(line: str) -> List[str]:
+    parts = line.strip().split("|")
+    if parts and parts[0] == "":
+        parts = parts[1:]
+    if parts and parts[-1] == "":
+        parts = parts[:-1]
+    return [part.strip() for part in parts]
+
+
+def _parse_table_row(line: str) -> Optional[List[str]]:
+    if "|" not in line:
+        return None
+    cells = _split_cells(line)
+    if not any(cells):
+        return None
+    return cells
+
+
+def _is_table_separator(line: str) -> bool:
+    if "|" not in line:
+        return False
+    parts = [part for part in _split_cells(line) if part != ""]
+    return bool(parts) and all(re.fullmatch(r"\s*:?-{3,}:?\s*", part) for part in parts)
+
+
+def _normalize_row(row: List[str], width: int) -> List[str]:
+    if len(row) < width:
+        row = row + ["" for _ in range(width - len(row))]
+    elif len(row) > width:
+        row = row[:width]
+    return row
+
+
+def _render_table(headers: List[str], rows: List[List[str]]) -> str:
+    header_html = "".join(f"<th>{_render_inline(cell)}</th>" for cell in headers)
+    normalized_rows = (_normalize_row(row, len(headers)) for row in rows)
+    body_html = "".join(
+        f"<tr>{''.join(f'<td>{_render_inline(cell)}</td>' for cell in row)}</tr>"
+        for row in normalized_rows
+    )
+    return f"<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
 
 
 def markdown(text: str, extensions=None) -> str:  # noqa: D401
@@ -48,7 +91,9 @@ def markdown(text: str, extensions=None) -> str:  # noqa: D401
             html_parts.append("</ul>")
             in_list = False
 
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         stripped = line.strip()
         if stripped.startswith("```"):
             flush_paragraph()
@@ -59,16 +104,35 @@ def markdown(text: str, extensions=None) -> str:  # noqa: D401
             else:
                 html_parts.append("<pre><code>")
                 in_code = True
+            i += 1
             continue
 
         if in_code:
             html_parts.append(html.escape(line))
+            i += 1
             continue
 
         if not stripped:
             flush_paragraph()
             close_list()
+            i += 1
             continue
+
+        if i + 1 < len(lines):
+            header_cells = _parse_table_row(stripped)
+            if header_cells and _is_table_separator(lines[i + 1].strip()):
+                flush_paragraph()
+                close_list()
+                rows: List[List[str]] = []
+                i += 2
+                while i < len(lines):
+                    row = _parse_table_row(lines[i].strip())
+                    if not row:
+                        break
+                    rows.append(row)
+                    i += 1
+                html_parts.append(_render_table(header_cells, rows))
+                continue
 
         if stripped.startswith("#"):
             flush_paragraph()
@@ -76,6 +140,7 @@ def markdown(text: str, extensions=None) -> str:  # noqa: D401
             level = len(stripped) - len(stripped.lstrip("#"))
             content = stripped[level:].strip()
             html_parts.append(f"<h{level}>{_render_inline(content)}</h{level}>")
+            i += 1
             continue
 
         if stripped[0] in "-*" and (len(stripped) == 1 or stripped[1] == " "):
@@ -84,9 +149,12 @@ def markdown(text: str, extensions=None) -> str:  # noqa: D401
                 html_parts.append("<ul>")
                 in_list = True
             html_parts.append(f"<li>{_render_inline(stripped[1:].strip())}</li>")
+            i += 1
             continue
 
         paragraph.append(_render_inline(stripped))
+
+        i += 1
 
     flush_paragraph()
     close_list()
