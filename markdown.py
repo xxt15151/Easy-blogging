@@ -29,19 +29,10 @@ def _render_inline(text: str) -> str:
     return "".join(segments)
 
 
-def _split_cells(line: str) -> List[str]:
-    parts = line.strip().split("|")
-    if parts and parts[0] == "":
-        parts = parts[1:]
-    if parts and parts[-1] == "":
-        parts = parts[:-1]
-    return [part.strip() for part in parts]
-
-
 def _parse_table_row(line: str) -> Optional[List[str]]:
     if "|" not in line:
         return None
-    cells = _split_cells(line)
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
     if not any(cells):
         return None
     return cells
@@ -50,24 +41,15 @@ def _parse_table_row(line: str) -> Optional[List[str]]:
 def _is_table_separator(line: str) -> bool:
     if "|" not in line:
         return False
-    parts = [part for part in _split_cells(line) if part != ""]
-    return bool(parts) and all(re.fullmatch(r"\s*:?-{3,}:?\s*", part) for part in parts)
-
-
-def _normalize_row(row: List[str], width: int) -> List[str]:
-    if len(row) < width:
-        row = row + ["" for _ in range(width - len(row))]
-    elif len(row) > width:
-        row = row[:width]
-    return row
+    parts = line.strip().strip("|").split("|")
+    return all(re.fullmatch(r"\s*:?-{3,}:?\s*", part) for part in parts)
 
 
 def _render_table(headers: List[str], rows: List[List[str]]) -> str:
     header_html = "".join(f"<th>{_render_inline(cell)}</th>" for cell in headers)
-    normalized_rows = (_normalize_row(row, len(headers)) for row in rows)
     body_html = "".join(
         f"<tr>{''.join(f'<td>{_render_inline(cell)}</td>' for cell in row)}</tr>"
-        for row in normalized_rows
+        for row in rows
     )
     return f"<table><thead><tr>{header_html}</tr></thead><tbody>{body_html}</tbody></table>"
 
