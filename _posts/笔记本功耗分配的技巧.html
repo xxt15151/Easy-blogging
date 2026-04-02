@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>笔记本功耗分配的技巧 | 轻松博客</title>
+  <link rel="stylesheet" href="../style.css?v=248dfc31d61d" />
+</head>
+<body>
+  <header class="top-nav">
+    <a href="../index.html" class="brand">轻松博客</a>
+    <a class="ghost-btn" href="../list.html">返回列表</a>
+  </header>
+  <main class="page">
+    <article class="card article">
+      <p class="eyebrow">发布于 2026-04-02</p>
+      <h1>笔记本功耗分配的技巧</h1>
+      <div class="article-body"><html>
+<body>
+<!--StartFragment--><html><head></head><body><h1>限制笔记本CPU功耗，反而能提高游戏帧数？
+</h1><blockquote><div class="ybc-p">在GPU受限的游戏中，通过降低CPU功耗，可以重新分配笔记本有限的供电资源，从而将更多电力分配给GPU，实现帧数提升。</div>
+</blockquote><hr><h2>一、引言：笔记本游戏的瓶颈困境
+</h2><div class="ybc-p">在游戏本圈子里，流传着一种看似矛盾的说法：</div>
+<div class="ybc-p">“在显卡（GPU）性能成为瓶颈的游戏里，降低中央处理器（CPU）的功耗限制，有时反而能提高帧数。”</div>
+<div class="ybc-p">这似乎违背了我们通常的硬件优化逻辑——更强的CPU理应带来更好的游戏表现。但对于散热和供电都受限的笔记本来说，真相并非如此。</div>
+<hr><h2>二、功耗墙：笔记本的硬约束
+</h2><div class="ybc-p">任何一台笔记本，其散热系统与电源适配器的供电能力都是有上限的。这个上限通常被称为“<strong>总功耗墙</strong>”（Total Power Limit）。</div>
+<div class="ybc-p">当CPU和GPU同时高负载运行时，它们会竞争这有限的供电和散热资源。如果某一方“吃得太多”，另一方就可能“吃不饱”。</div>
+<hr><h2>三、理论：GPU受限下的功耗分配
+</h2><div class="ybc-p">理解这个问题的关键在于识别游戏的<strong>主要瓶颈</strong>：</div>
+<ol class="ybc-ol-component ybc-ol-component_1"><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>GPU瓶颈</strong>：在绝大多数3A大作、高画质游戏中，笔记本的<strong>独立显卡（GPU）是首要的性能瓶颈</strong>。此时，CPU虽然也在工作，但负载通常不会太高，它的计算能力是“相对过剩”的。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>功耗竞争</strong>：笔记本的供电策略是动态的。当CPU因复杂场景（如多单位计算、物理模拟）突然需要更高性能时，其功耗会急剧上升。在总功耗墙的限制下，这可能会“偷走”原本应分配给GPU的电力。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>帧数影响</strong>：如果GPU因供电不足而无法运行在最高频率，其渲染效率就会下降，<strong>直接导致帧数降低或波动</strong>。</div>
+</span></li></ol><h3>核心逻辑链
+</h3><div class="ybc-p"><strong>限制CPU功耗</strong>​ → <strong>减少CPU对供电/散热资源的占用</strong>​ → <strong>GPU可获得更充足、更稳定的电力供应</strong>​ → <strong>GPU得以在更高、更稳定的频率下运行</strong>​ → <strong>最终提升游戏平均帧与最低帧。</strong></div>
+<hr><h2>四、一个模拟案例
+</h2><div class="ybc-p">假设一台游戏本，其散热设计功耗（TGP）为150W，采用“动态分配”策略：</div>
+<ul class="ybc-ul-component"><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>游戏A</strong>：3A开放世界大作，极度依赖GPU。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>无限制时</strong>：GPU试图跑120W，CPU在复杂场景会飙升到60W，瞬时总功耗达180W，触发功耗墙。系统被迫同时降低CPU和GPU的频率，造成帧数骤降。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>限制CPU后</strong>：我们将CPU长期功耗（PL1）锁定在40W。GPU可以稳定获得110W的供电。虽然CPU峰值性能下降，但游戏瓶颈是GPU，<strong>GPU的稳定高功耗换来了更流畅、无卡顿的游戏体验</strong>，平均帧数反而上升了。</div>
+</span></li></ul><hr><h2>五、Windows功耗策略的“不智能”之处
+</h2><div class="ybc-p">微软Windows系统的默认电源管理策略，是服务于<strong>通用计算</strong>的，其核心倾向是：</div>
+<ol class="ybc-ol-component ybc-ol-component_1"><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>CPU优先</strong>：系统设计上，CPU是计算的核心与大脑。当有突发任务时，系统会优先保障CPU的电力供应，以确保系统响应和前台任务的流畅。这是为了保障用户体验的“跟手性”。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>缺乏场景感知</strong>：在游戏全屏运行时，系统并不能智能地判断当前是“<strong>GPU敏感型负载</strong>”。它依然会为CPU保留较高的功耗提升空间（如Intel的Turbo Boost、AMD的Precision Boost），以备不时之需。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>保守的调度</strong>：为了稳定性和兼容性，Windows不会激进地将所有空闲电力都调拨给GPU，这导致在GPU最需要电力的关键时刻，可能无法得到全力支持。</div>
+</span></li></ol><div class="ybc-p">这种“<strong>CPU优先，平均分配</strong>”的策略，在办公、浏览时是合理的，但在GPU瓶颈的游戏中，就显得不够智能，未能将有限的电能“好钢用在刀刃上”。</div>
+<hr><h2>六、如何操作：手动优化功耗分配
+</h2><div class="ybc-p">要实现这种优化，需要绕过Windows的默认策略，手动进行干预。主要有两种途径：</div>
+<h3>1. 使用厂商控制台（推荐）
+</h3><div class="ybc-p">大多数游戏本品牌（如ROG、微星、联想拯救者、戴尔外星人等）都提供了功能强大的控制中心软件。你通常可以找到以下选项：</div>
+<ul class="ybc-ul-component"><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>性能模式切换</strong>：例如“安静模式”、“平衡模式”、“性能模式”、“狂暴模式”。不同的模式预设了不同的CPU/GPU功耗分配策略。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>手动模式</strong>：<strong>这是最核心的功能</strong>。在手动模式下，你可以：</div>
+<ul class="ybc-ul-component"><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>拉高GPU的功耗墙和温度墙</strong>。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>降低CPU的功耗限制（PL1）和温度墙</strong>。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p">自定义风扇曲线，为更激进的性能释放提供散热保障。</div>
+</span></li></ul></span></li></ul><h3>2. 使用通用工具（需谨慎）
+</h3><ul class="ybc-ul-component"><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>ThrottleStop</strong>：适用于英特尔CPU，功能强大，可精细调节CPU的功耗、电压、频率。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>AMD APU Tuning Utility</strong>：适用于AMD CPU。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ul"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>MSI Afterburner</strong>：主要用于显卡超频，但其监控功能不可或缺。<strong>优化前务必用它监控游戏时CPU和GPU的功耗、温度、频率和占用率</strong>，以确认瓶颈所在。</div>
+</span></li></ul><hr><h2>七、操作步骤与注意事项
+</h2><ol class="ybc-ol-component ybc-ol-component_1"><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>监控先行</strong>：用游戏加加、微星小飞机等工具，监控游戏时GPU的占用率。如果长期在95%以上，且帧数不足，说明是GPU瓶颈，适合此优化。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>循序渐进</strong>：在控制台手动模式中，先将CPU功耗限制小幅下调（如从60W降至50W），同时观察GPU功耗能否稳定上升，以及游戏帧数的变化。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>压力测试</strong>：优化后运行《3DMark Time Spy》等基准测试，或进入游戏中最复杂的场景，测试稳定性，确保不会因为CPU性能被限制过低而导致崩溃或物理错误。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>明确副作用</strong>：此方法<strong>主要提升GPU瓶颈游戏的体验</strong>。对于《CS2》、《星际争霸2》等<strong>CPU瓶颈的网游或电竞游戏</strong>，限制CPU功耗会导致帧数严重下降。你需要根据游戏类型创建不同的配置文件。</div>
+</span></li><li class="ybc-li-component ybc-li-component_ol"><span class="ybc-li-component__dot-wp"></span><span class="ybc-li-component_content"><div class="ybc-p"><strong>散热保障</strong>：任何性能释放都建立在良好散热的基础上。确保笔记本进出风口通畅，必要时使用瓶盖或支架垫高。</div>
+</span></li></ol><hr><h2>八、总结
+</h2><div class="hyc-common-markdown__table-wrapper isDark" data-has-scroll="false" style="font-size: 16px; border-collapse: separate; border-spacing: 0px; padding: 0px;">
+场景 | 瓶颈 | 优化策略 | 预期效果
+-- | -- | -- | --
+3A大作、高画质单机 | GPU瓶颈​ | 限制CPU功耗，保障GPU供电​ | 提升平均帧，稳定最低帧​
+电竞网游、低画质 | CPU瓶颈​ | 保障CPU性能，或适当超频 | 提升高帧率表现
+复杂模拟、策略游戏 | 混合瓶颈​ | 需平衡两者，或不做限制 | 视情况而定
+
+</div><div class="ybc-p">在笔记本这个“寸土寸金”的移动平台上，功耗和散热是比台式机严峻得多的挑战。Windows“一刀切”的功耗策略，在复杂的游戏场景中并非最优解。</div>
+<div class="ybc-p"><strong>理解硬件瓶颈的本质，通过手动精细化的功耗分配，将有限的电能精准地导向最需要它的部件（通常是GPU），是高端游戏玩家释放笔记本全部潜力的关键技巧。</strong></div>
+<div class="ybc-p">这本质上是一种“<strong>牺牲局部非关键性能，换取全局核心体验</strong>”的资源调度智慧。下次当你的游戏本帧数不如预期时，不妨看看任务管理器，是不是CPU“抢了太多电”，然后尝试用这个思路，或许会有意想不到的收获。</div>
+</body></html><!--EndFragment-->
+</body>
+</html></div>
+    </article>
+  </main>
+</body>
+</html>
